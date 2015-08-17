@@ -11,8 +11,8 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia. For licensing terms and
-** conditions see http://qt.digia.com/licensing. For further information
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
@@ -25,7 +25,7 @@
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights. These rights are described in the Digia Qt LGPL Exception
+** rights.  These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** $QT_END_LICENSE$
@@ -39,6 +39,11 @@
 
 #include <QMessageBox>
 #include <QtSerialPort/QSerialPort>
+#include <QDebug>
+#include <QLabel>
+#include <QPixmap>
+#include <QFile>
+#include <QTextStream>
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent) :
@@ -84,12 +89,13 @@ void MainWindow::openSerialPort()
 {
     SettingsDialog::Settings p = settings->settings();
     serial->setPortName(p.name);
-    serial->setBaudRate(p.baudRate);
-    serial->setDataBits(p.dataBits);
-    serial->setParity(p.parity);
-    serial->setStopBits(p.stopBits);
-    serial->setFlowControl(p.flowControl);
     if (serial->open(QIODevice::ReadWrite)) {
+        if (serial->setBaudRate(p.baudRate)
+                && serial->setDataBits(p.dataBits)
+                && serial->setParity(p.parity)
+                && serial->setStopBits(p.stopBits)
+                && serial->setFlowControl(p.flowControl)) {
+
             console->setEnabled(true);
             console->setLocalEchoEnabled(p.localEchoEnabled);
             ui->actionConnect->setEnabled(false);
@@ -98,10 +104,17 @@ void MainWindow::openSerialPort()
             ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
                                        .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                                        .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
+
+        } else {
+            serial->close();
+            QMessageBox::critical(this, tr("Error"), serial->errorString());
+
+            ui->statusBar->showMessage(tr("Open error"));
+        }
     } else {
         QMessageBox::critical(this, tr("Error"), serial->errorString());
 
-        ui->statusBar->showMessage(tr("Open error"));
+        ui->statusBar->showMessage(tr("Configure error"));
     }
 }
 //! [4]

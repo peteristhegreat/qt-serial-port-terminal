@@ -16,7 +16,8 @@ SOURCES += \
 HEADERS += \
     mainwindow.h \
     settingsdialog.h \
-    console.h
+    console.h \
+    version.h
 
 FORMS += \
     mainwindow.ui \
@@ -24,3 +25,8 @@ FORMS += \
 
 RESOURCES += \
     terminal.qrc
+
+RC_FILE = myapp.rc
+
+OTHER_FILES += \
+    myapp.rc
